@@ -27,7 +27,7 @@ const JWKS = createRemoteJWKSet(
   new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
 );
 
-const verifyToken = async (req:Request, res:Response, next:Function) => {
+const verifyToken = async (req: Request, res: Response, next: Function) => {
   const authHeader = req?.headers.authorization;
   if (!authHeader) {
     return res.status(401).json({ message: "Unauthorized" });
@@ -80,44 +80,44 @@ async function run() {
     // ==========================
     // Get All Events
     // ==========================
-   app.get("/events", async (req: Request, res: Response) => {
-     const page = Number(req.query.page) || 1;
-     const limit = Number(req.query.limit) || 12;
-     const search = req.query.search as string;
-     const category = req.query.category as string;
+    app.get("/events", async (req: Request, res: Response) => {
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 12;
+      const search = req.query.search as string;
+      const category = req.query.category as string;
 
-     const query: any = {};
+      const query: any = {};
 
-     if (search) {
-       query.$or = [
-         { title: { $regex: search, $options: "i" } },
-         { description: { $regex: search, $options: "i" } },
-         { location: { $regex: search, $options: "i" } },
-         { venue: { $regex: search, $options: "i" } },
-       ];
-     }
+      if (search) {
+        query.$or = [
+          { title: { $regex: search, $options: "i" } },
+          { description: { $regex: search, $options: "i" } },
+          { location: { $regex: search, $options: "i" } },
+          { venue: { $regex: search, $options: "i" } },
+        ];
+      }
 
-     if (category) {
-       query.category = category;
-     }
-     const total = await eventsCollection.countDocuments(query);
-     const events = await eventsCollection
-       .find(query)
-       .skip((page - 1) * limit)
-       .limit(limit)
-       .toArray();
+      if (category) {
+        query.category = category;
+      }
+      const total = await eventsCollection.countDocuments(query);
+      const events = await eventsCollection
+        .find(query)
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .toArray();
 
-     res.json({
-       success: true,
-       data: events,
-       pagination: {
-         total,
-         page,
-         limit,
-         pages: Math.ceil(total / limit),
-       },
-     });
-   });
+      res.json({
+        success: true,
+        data: events,
+        pagination: {
+          total,
+          page,
+          limit,
+          pages: Math.ceil(total / limit),
+        },
+      });
+    });
 
     // ==========================
     // Get Single Event
@@ -127,7 +127,6 @@ async function run() {
       const result = await eventsCollection.findOne({
         _id: new ObjectId(id),
       });
-
       res.json(result);
     });
 
