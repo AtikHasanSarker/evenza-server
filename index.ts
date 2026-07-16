@@ -60,26 +60,21 @@ async function run() {
       res.send("Server is running for Evenza!");
     });
 
-    // ==========================
-    // Create Event
-    // ==========================
     app.post("/events", async (req: Request, res: Response) => {
       const eventData = req.body;
-
+      // const userId = req.user.id;
+      // eventData.userId = userId;
       const result = await eventsCollection.insertOne(eventData);
 
       const insertedEvent = await eventsCollection.findOne({
         _id: result.insertedId,
       });
-
       res.json({
         success: true,
         data: insertedEvent,
       });
     });
-    // ==========================
-    // Get All Events
-    // ==========================
+
     app.get("/events", async (req: Request, res: Response) => {
       const page = Number(req.query.page) || 1;
       const limit = Number(req.query.limit) || 12;
@@ -119,14 +114,25 @@ async function run() {
       });
     });
 
-    // ==========================
-    // Get Single Event
-    // ==========================
     app.get("/events/:id", async (req: Request, res: Response) => {
       const id = req.params.id as string;
       const result = await eventsCollection.findOne({
         _id: new ObjectId(id),
       });
+      res.json(result);
+    });
+
+    app.get("/events/:userId", async (req: Request, res: Response) => {
+      const userId = req.params.userId as string;
+      const result = await eventsCollection.find({
+        userId,
+      }).toArray();
+      res.json(result);
+    });
+
+    // Featured Events
+    app.get("/featured-events", async (req: Request, res: Response) => {
+      const result = await eventsCollection.find({ featured: true }).toArray();
       res.json(result);
     });
 
