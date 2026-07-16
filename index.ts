@@ -2,6 +2,7 @@ import express, { Request, Response } from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { MongoClient, ServerApiVersion, ObjectId } from "mongodb";
+import { createRemoteJWKSet, jwtVerify } from "jose-cjs";
 
 dotenv.config();
 
@@ -20,6 +21,29 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+
+const JWKS = createRemoteJWKSet(
+  new URL(`${process.env.CLIENT_URL}/api/auth/jwks`),
+);
+
+const verifyToken = async (req:Request, res:Response, next:Function) => {
+  const authHeader = req?.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  if (!token) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  try {
+    const { payload } = await jwtVerify(token, JWKS);
+    next();
+  } catch (error) {
+    return res.status(403).json({ message: "Forbidden" });
+  }
+};
 
 async function run() {
   try {
